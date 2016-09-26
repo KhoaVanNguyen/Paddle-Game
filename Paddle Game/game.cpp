@@ -19,6 +19,9 @@ SPRITE ball;
 LPDIRECT3DTEXTURE9 paddle_image;
 SPRITE paddle;
 
+//paddle sprite2
+LPDIRECT3DTEXTURE9 paddle_image2;
+SPRITE paddle2;
 //the wave sound
 //CSound *sound_bounce;
 //CSound *sound_hit;
@@ -38,7 +41,6 @@ RECT fRect;
 
 std::string message;
 // keep track the MouseY
-int preMouseY = 5;
 ofstream myfile("trace.txt");
 //initializes the game
 void KeepTrack(int mouseY) {
@@ -57,7 +59,6 @@ int Game_Init(HWND hwnd)
 {
 	//set random number seed
 	srand(time(NULL));
-	KeepTrack(preMouseY);
 	//initialize mouse
 	if (!Init_Mouse(hwnd))
 	{
@@ -105,8 +106,13 @@ int Game_Init(HWND hwnd)
 	paddle.width = 26;
 	paddle.height = 90;
 
-	// Initialize MouseY
-	preMouseY = Mouse_Y();
+
+	paddle_image2 = LoadTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
+	//set paddle2 properties
+	paddle2.x = SCREEN_WIDTH - 46;
+	paddle2.y = SCREEN_HEIGHT / 2;
+	paddle2.width = 26;
+	paddle2.height = 90;
 	
 	// Init font
 	font = NULL;
@@ -216,9 +222,16 @@ void Game_Run(HWND hwnd)
 			paddle.y -= 5;
 
 		//check for right arrow
-		if (Key_Down(DIK_DOWNARROW))
+		else if (Key_Down(DIK_DOWNARROW))
 			paddle.y += 5;
 	
+		// For paddle2
+		 if (Key_Down(DIK_W))
+			paddle2.y -= 5;
+
+		//check for right arrow
+		 else if (Key_Down(DIK_S))
+			paddle2.y += 5;
 		// !=0 means mouse has moved up or down
 		if (Mouse_Y() != 0) {
 			int tempValue = abs(Mouse_Y()) / 2;
@@ -239,12 +252,17 @@ void Game_Run(HWND hwnd)
 		if (paddle.y + paddle.height >= SCREEN_HEIGHT) {
 			paddle.y = SCREEN_HEIGHT - paddle.height;
 		}
+		if (paddle2.y <= 0) {
+			paddle2.y = 0;
+		}
+		if (paddle2.y + paddle2.height >= SCREEN_HEIGHT) {
+			paddle2.y = SCREEN_HEIGHT - paddle2.height;
+		}
 		//see if ball hit the paddle
-		if (Collision(paddle, ball))
+		if (Collision(paddle, ball) || Collision(paddle2,ball))
 		{
-			ball.y -= ball.movey;
-			ball.movey *= -1;
-			score1++;
+			ball.x -= ball.movey;
+			ball.movex *= -1;
 			isIncreaseScore = true;
 			
 			//   PlaySound(sound_hit);
@@ -275,6 +293,16 @@ void Game_Run(HWND hwnd)
 		position.y = (float)paddle.y;
 		sprite_handler->Draw(
 			paddle_image,
+			NULL,
+			NULL,
+			&position,
+			D3DCOLOR_XRGB(255, 255, 255));
+
+		//draw the paddle2
+		position.x = (float)paddle2.x;
+		position.y = (float)paddle2.y;
+		sprite_handler->Draw(
+			paddle_image2,
 			NULL,
 			NULL,
 			&position,
@@ -317,6 +345,8 @@ void Game_End(HWND hwnd)
 	if (paddle_image != NULL)
 		paddle_image->Release();
 
+	if (paddle_image2 != NULL)
+		paddle_image2->Release();
 	if (back != NULL)
 		back->Release();
 
