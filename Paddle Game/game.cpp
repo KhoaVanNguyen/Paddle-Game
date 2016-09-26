@@ -31,18 +31,27 @@ long start = GetTickCount();
 HRESULT result;
 
 // Score
-int score1;
-int score2;
+int score1 = 0;
+int score2 = 0;
+int totalTime = 0;
 bool isIncreaseScore = false;
 
 // Font
 ID3DXFont *font;
-RECT fRect;
-
-std::string message;
+RECT rScore1;
+RECT rScore2;
+RECT rTimer;
+std::string message1;
+std::string message2;
+std::string timerText;
 // keep track the MouseY
 ofstream myfile("trace.txt");
 //initializes the game
+void UpdateLables() {
+	message1 = to_string(score1);
+	message2 = to_string(score2);
+	timerText = to_string(totalTime) + 's';
+}
 void KeepTrack(int mouseY) {
 
 	if (myfile.is_open())
@@ -101,7 +110,7 @@ int Game_Init(HWND hwnd)
 	if (paddle_image == NULL)
 		return 0;
 	//set paddle properties
-	paddle.x = 20;
+	paddle.x = 40;
 	paddle.y = SCREEN_HEIGHT / 2;
 	paddle.width = 26;
 	paddle.height = 90;
@@ -109,7 +118,7 @@ int Game_Init(HWND hwnd)
 
 	paddle_image2 = LoadTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
 	//set paddle2 properties
-	paddle2.x = SCREEN_WIDTH - 46;
+	paddle2.x = SCREEN_WIDTH - 66;
 	paddle2.y = SCREEN_HEIGHT / 2;
 	paddle2.width = 26;
 	paddle2.height = 90;
@@ -122,10 +131,10 @@ int Game_Init(HWND hwnd)
 		return false;
 	}
 
-	SetRect(&fRect, 0, 0, 200, 400);
-	
-	message = "1  --  2";
-
+	SetRect(&rScore1, 0, 0, 200, 400);
+	SetRect(&rScore2, SCREEN_WIDTH - 200, 0, SCREEN_WIDTH, 400);
+	SetRect(&rTimer, (SCREEN_WIDTH / 2) -50, 0, (SCREEN_WIDTH / 2 ) + 50, 100);
+	UpdateLables();
 	//load bounce wave file
 	//    sound_bounce = LoadSound("bounce.wav");
 	/*  if (sound_bounce == NULL)
@@ -186,15 +195,27 @@ void Game_Run(HWND hwnd)
 		//bounce the ball at screen edges
 		if (ball.x > SCREEN_WIDTH - ball.width)
 		{
-			ball.x -= ball.width;
+			//ball.x -= ball.width;
+			//ball.movex *= -1;
+			////      PlaySound(sound_bounce);
+			// player 2 win
+			score1++;
+			ball.x = SCREEN_WIDTH / 2;
+			ball.y = SCREEN_HEIGHT / 2;
 			ball.movex *= -1;
-			//      PlaySound(sound_bounce);
+		
+			
 		}
 		else if (ball.x < 0)
 		{
-			ball.x += ball.width;
-			ball.movex *= -1;
+			/*ball.x += ball.width;
+			ball.movex *= -1;*/
 			//      PlaySound(sound_bounce);
+			// player 2 win
+			score2++;
+			ball.x = SCREEN_WIDTH  / 2;
+			ball.y = SCREEN_HEIGHT / 2;
+			ball.movex *= 1;
 		}
 
 		if (ball.y > SCREEN_HEIGHT - ball.height)
@@ -308,13 +329,16 @@ void Game_Run(HWND hwnd)
 			&position,
 			D3DCOLOR_XRGB(255, 255, 255));
 
+		UpdateLables();
 		// draw text:
-		if (isIncreaseScore) {
-			message = to_string(score1);
-			isIncreaseScore = false;
+		if (font != NULL) {
+			font->DrawTextA(NULL, message1.c_str(), -1, &rScore1, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
 		}
 		if (font != NULL) {
-			font->DrawTextA(NULL, message.c_str(), -1, &fRect, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
+			font->DrawTextA(NULL, message2.c_str(), -1, &rScore2, DT_RIGHT, D3DCOLOR_XRGB(255, 255, 255));
+		}
+		if (font != NULL) {
+			font->DrawTextA(NULL, timerText.c_str(), -1, &rTimer, DT_CENTER, D3DCOLOR_XRGB(255, 255, 255));
 		}
 		//stop drawing
 		sprite_handler->End();
