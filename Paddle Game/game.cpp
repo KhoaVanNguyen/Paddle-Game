@@ -1,10 +1,10 @@
-// Beginning Game Programming, Second Edition
+﻿// Beginning Game Programming, Second Edition
 // Chapter 10
 // Paddle_Game program source code file
-
-
+#include <iostream>
 #include "game.h"
-
+#include <fstream>
+using namespace std;
 //background image
 LPDIRECT3DSURFACE9 back;
 
@@ -27,13 +27,37 @@ SPRITE paddle;
 long start = GetTickCount();
 HRESULT result;
 
+// Score
+int score1;
+int score2;
+bool isIncreaseScore = false;
 
+// Font
+ID3DXFont *font;
+RECT fRect;
+
+std::string message;
+// keep track the MouseY
+int preMouseY = 5;
+ofstream myfile("trace.txt");
 //initializes the game
+void KeepTrack(int mouseY) {
+
+	if (myfile.is_open())
+	{
+		myfile << "Mouse_Y = " << mouseY << "\n";
+		//myfile.close();
+	}
+	else {
+		//MessageBox(hwnd, "Error initializing the mouse", "Error", MB_OK);
+	}
+}
+
 int Game_Init(HWND hwnd)
 {
 	//set random number seed
 	srand(time(NULL));
-
+	KeepTrack(preMouseY);
 	//initialize mouse
 	if (!Init_Mouse(hwnd))
 	{
@@ -64,8 +88,8 @@ int Game_Init(HWND hwnd)
 		return 0;
 
 	//set the ball's properties
-	ball.x = 400;
-	ball.y = 200;
+	ball.x = SCREEN_WIDTH / 2;
+	ball.y = SCREEN_HEIGHT / 2;
 	ball.width = 12;
 	ball.height = 12;
 	ball.movex = 8;
@@ -80,6 +104,21 @@ int Game_Init(HWND hwnd)
 	paddle.y = SCREEN_HEIGHT / 2;
 	paddle.width = 26;
 	paddle.height = 90;
+
+	// Initialize MouseY
+	preMouseY = Mouse_Y();
+	
+	// Init font
+	font = NULL;
+	HRESULT fontResult =  D3DXCreateFont(d3ddev, 40, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+		ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &font);
+	if (!SUCCEEDED(fontResult)) {
+		return false;
+	}
+
+	SetRect(&fRect, 0, 0, 200, 400);
+	
+	message = "1  --  2";
 
 	//load bounce wave file
 	//    sound_bounce = LoadSound("bounce.wav");
@@ -166,20 +205,11 @@ void Game_Run(HWND hwnd)
 		}
 
 		//move the paddle
-		paddle.x += Mouse_X();
+		/*paddle.x += Mouse_X();
 		if (paddle.x > SCREEN_WIDTH - paddle.width)
 			paddle.x = SCREEN_WIDTH - paddle.width;
 		else if (paddle.x < 0)
-			paddle.x = 0;
-
-		//  constraint the paddle to the screen's edges
-
-		if (paddle.y <= 0) {
-			paddle.y = 0;
-		}
-		if (paddle.y + paddle.height >= SCREEN_HEIGHT) {
-			paddle.y = SCREEN_HEIGHT - paddle.height;
-		}
+			paddle.x = 0;*/
 
 		//check for left arrow
 		if (Key_Down(DIK_UPARROW))
@@ -188,16 +218,37 @@ void Game_Run(HWND hwnd)
 		//check for right arrow
 		if (Key_Down(DIK_DOWNARROW))
 			paddle.y += 5;
+	
+		// !=0 means mouse has moved up or down
+		if (Mouse_Y() != 0) {
+			int tempValue = abs(Mouse_Y()) / 2;
+			if (Mouse_Y() > 0) {
+				paddle.y +=  tempValue;
+			}
+			else {
+				paddle.y -= tempValue;
+			}
+		}
+		KeepTrack(Mouse_Y());
 
-
+		
+		//  constraint the paddle to the screen's edges
+		if (paddle.y <= 0) {
+			paddle.y = 0;
+		}
+		if (paddle.y + paddle.height >= SCREEN_HEIGHT) {
+			paddle.y = SCREEN_HEIGHT - paddle.height;
+		}
 		//see if ball hit the paddle
 		if (Collision(paddle, ball))
 		{
 			ball.y -= ball.movey;
 			ball.movey *= -1;
+			score1++;
+			isIncreaseScore = true;
+			
 			//   PlaySound(sound_hit);
 		}
-
 	}
 
 	//start rendering
@@ -229,6 +280,14 @@ void Game_Run(HWND hwnd)
 			&position,
 			D3DCOLOR_XRGB(255, 255, 255));
 
+		// draw text:
+		if (isIncreaseScore) {
+			message = to_string(score1);
+			isIncreaseScore = false;
+		}
+		if (font != NULL) {
+			font->DrawTextA(NULL, message.c_str(), -1, &fRect, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
+		}
 		//stop drawing
 		sprite_handler->End();
 
@@ -263,7 +322,10 @@ void Game_End(HWND hwnd)
 
 	if (sprite_handler != NULL)
 		sprite_handler->Release();
-
+	if (font != NULL) {
+		font->Release();
+		font = 0;
+	}
 	//if (sound_bounce != NULL)
 	//    delete sound_bounce;
 
@@ -272,4 +334,3 @@ void Game_End(HWND hwnd)
 
 
 }
-

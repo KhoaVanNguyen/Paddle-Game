@@ -16,6 +16,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 
 //framework-specific headers
 #include "dxgraphics.h"
@@ -34,6 +35,7 @@
 int Game_Init(HWND);
 void Game_Run(HWND);
 void Game_End(HWND);
+
 
 //sprite structure
 typedef struct {
