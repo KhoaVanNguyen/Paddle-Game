@@ -76,10 +76,10 @@ int Game_Init(HWND hwnd)
 	if (paddle_image == NULL)
 		return 0;
 	//set paddle properties
-	paddle.x = 300;
-	paddle.y = SCREEN_HEIGHT - 100;
-	paddle.width = 90;
-	paddle.height = 26;
+	paddle.x = 20;
+	paddle.y = SCREEN_HEIGHT / 2;
+	paddle.width = 26;
+	paddle.height = 90;
 
 	//load bounce wave file
 	//    sound_bounce = LoadSound("bounce.wav");
@@ -172,13 +172,22 @@ void Game_Run(HWND hwnd)
 		else if (paddle.x < 0)
 			paddle.x = 0;
 
+		//  constraint the paddle to the screen's edges
+
+		if (paddle.y <= 0) {
+			paddle.y = 0;
+		}
+		if (paddle.y + paddle.height >= SCREEN_HEIGHT) {
+			paddle.y = SCREEN_HEIGHT - paddle.height;
+		}
+
 		//check for left arrow
-		if (Key_Down(DIK_LEFT))
-			paddle.x -= 5;
+		if (Key_Down(DIK_UPARROW))
+			paddle.y -= 5;
 
 		//check for right arrow
-		if (Key_Down(DIK_RIGHT))
-			paddle.x += 5;
+		if (Key_Down(DIK_DOWNARROW))
+			paddle.y += 5;
 
 
 		//see if ball hit the paddle
