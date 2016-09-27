@@ -27,14 +27,20 @@ SPRITE paddle2;
 //CSound *sound_hit;
 
 //misc
+
+// Timer
 long start = GetTickCount();
+long startTimer = GetTickCount();
+long totalSeconds = 0;
 HRESULT result;
 
 // Score
 int score1 = 0;
 int score2 = 0;
-int totalTime = 0;
 bool isIncreaseScore = false;
+
+// SPEED
+int keyboradSpeed = 10;
 
 // Font
 ID3DXFont *font;
@@ -50,14 +56,19 @@ ofstream myfile("trace.txt");
 void UpdateLables() {
 	message1 = to_string(score1);
 	message2 = to_string(score2);
-	timerText = to_string(totalTime) + 's';
+	timerText = to_string(totalSeconds) + " s";
 }
 void KeepTrack(int mouseY) {
 
 	if (myfile.is_open())
 	{
-		myfile << "Mouse_Y = " << mouseY << "\n";
+		//myfile << "Mouse_Y = " << mouseY << "\n";
 		//myfile.close();
+		if (GetTickCount() - startTimer > 1000) {
+			totalSeconds++;
+			myfile << "Time : " << totalSeconds << "\n";
+			startTimer = GetTickCount();
+		}
 	}
 	else {
 		//MessageBox(hwnd, "Error initializing the mouse", "Error", MB_OK);
@@ -240,19 +251,19 @@ void Game_Run(HWND hwnd)
 
 		//check for left arrow
 		if (Key_Down(DIK_UPARROW))
-			paddle.y -= 5;
+			paddle.y -= keyboradSpeed;
 
 		//check for right arrow
 		else if (Key_Down(DIK_DOWNARROW))
-			paddle.y += 5;
+			paddle.y += keyboradSpeed;
 	
 		// For paddle2
 		 if (Key_Down(DIK_W))
-			paddle2.y -= 5;
+			paddle2.y -= keyboradSpeed;
 
 		//check for right arrow
 		 else if (Key_Down(DIK_S))
-			paddle2.y += 5;
+			paddle2.y += keyboradSpeed;
 		// !=0 means mouse has moved up or down
 		if (Mouse_Y() != 0) {
 			int tempValue = abs(Mouse_Y()) / 2;
@@ -289,7 +300,6 @@ void Game_Run(HWND hwnd)
 			//   PlaySound(sound_hit);
 		}
 	}
-
 	//start rendering
 	if (d3ddev->BeginScene())
 	{
