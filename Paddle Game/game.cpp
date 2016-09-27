@@ -53,6 +53,19 @@ std::string timerText;
 // keep track the MouseY
 ofstream myfile("trace.txt");
 //initializes the game
+int GenerateNewPostion() {
+
+	//int v3 = rand() % 30 + 1985;// v3 in the range 1985-2014 // b-a-1   + a
+	int random = rand() % 2 + 1;
+	return (random == 2) ? 1 : -1;
+}
+
+void CountTime() {
+	if (GetTickCount() - startTimer > 1000) {
+		totalSeconds++;
+		startTimer = GetTickCount();
+	}
+}
 void UpdateLables() {
 	message1 = to_string(score1);
 	message2 = to_string(score2);
@@ -66,7 +79,7 @@ void KeepTrack(int mouseY) {
 		//myfile.close();
 		if (GetTickCount() - startTimer > 1000) {
 			totalSeconds++;
-			myfile << "Time : " << totalSeconds << "\n";
+			//myfile << "Time : " << totalSeconds << "\n";
 			startTimer = GetTickCount();
 		}
 	}
@@ -133,10 +146,10 @@ int Game_Init(HWND hwnd)
 	paddle2.y = SCREEN_HEIGHT / 2;
 	paddle2.width = 26;
 	paddle2.height = 90;
-	
+
 	// Init font
 	font = NULL;
-	HRESULT fontResult =  D3DXCreateFont(d3ddev, 40, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+	HRESULT fontResult = D3DXCreateFont(d3ddev, 40, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &font);
 	if (!SUCCEEDED(fontResult)) {
 		return false;
@@ -144,7 +157,7 @@ int Game_Init(HWND hwnd)
 
 	SetRect(&rScore1, 0, 0, 200, 400);
 	SetRect(&rScore2, SCREEN_WIDTH - 200, 0, SCREEN_WIDTH, 400);
-	SetRect(&rTimer, (SCREEN_WIDTH / 2) -50, 0, (SCREEN_WIDTH / 2 ) + 50, 100);
+	SetRect(&rTimer, (SCREEN_WIDTH / 2) - 50, 0, (SCREEN_WIDTH / 2) + 50, 100);
 	UpdateLables();
 	//load bounce wave file
 	//    sound_bounce = LoadSound("bounce.wav");
@@ -191,7 +204,7 @@ void Game_Run(HWND hwnd)
 	//update mouse and keyboard
 	Poll_Mouse();
 	Poll_Keyboard();
-
+	CountTime();
 	//after short delay, ready for next frame?
 	//this keeps the game running at a steady frame rate
 	if (GetTickCount() - start >= 30)
@@ -213,9 +226,9 @@ void Game_Run(HWND hwnd)
 			score1++;
 			ball.x = SCREEN_WIDTH / 2;
 			ball.y = SCREEN_HEIGHT / 2;
-			ball.movex *= -1;
-		
-			
+			ball.movex *= GenerateNewPostion();
+
+
 		}
 		else if (ball.x < 0)
 		{
@@ -224,9 +237,9 @@ void Game_Run(HWND hwnd)
 			//      PlaySound(sound_bounce);
 			// player 2 win
 			score2++;
-			ball.x = SCREEN_WIDTH  / 2;
+			ball.x = SCREEN_WIDTH / 2;
 			ball.y = SCREEN_HEIGHT / 2;
-			ball.movex *= 1;
+			ball.movex *= GenerateNewPostion();
 		}
 
 		if (ball.y > SCREEN_HEIGHT - ball.height)
@@ -249,34 +262,33 @@ void Game_Run(HWND hwnd)
 		else if (paddle.x < 0)
 			paddle.x = 0;*/
 
-		//check for left arrow
+			//check for left arrow
 		if (Key_Down(DIK_UPARROW))
 			paddle.y -= keyboradSpeed;
 
 		//check for right arrow
 		else if (Key_Down(DIK_DOWNARROW))
 			paddle.y += keyboradSpeed;
-	
+
 		// For paddle2
-		 if (Key_Down(DIK_W))
+		if (Key_Down(DIK_W))
 			paddle2.y -= keyboradSpeed;
 
 		//check for right arrow
-		 else if (Key_Down(DIK_S))
+		else if (Key_Down(DIK_S))
 			paddle2.y += keyboradSpeed;
 		// !=0 means mouse has moved up or down
 		if (Mouse_Y() != 0) {
 			int tempValue = abs(Mouse_Y()) / 2;
 			if (Mouse_Y() > 0) {
-				paddle.y +=  tempValue;
+				paddle.y += tempValue;
 			}
 			else {
 				paddle.y -= tempValue;
 			}
 		}
-		KeepTrack(Mouse_Y());
 
-		
+
 		//  constraint the paddle to the screen's edges
 		if (paddle.y <= 0) {
 			paddle.y = 0;
@@ -291,12 +303,12 @@ void Game_Run(HWND hwnd)
 			paddle2.y = SCREEN_HEIGHT - paddle2.height;
 		}
 		//see if ball hit the paddle
-		if (Collision(paddle, ball) || Collision(paddle2,ball))
+		if (Collision(paddle, ball) || Collision(paddle2, ball))
 		{
 			ball.x -= ball.movey;
 			ball.movex *= -1;
 			isIncreaseScore = true;
-			
+
 			//   PlaySound(sound_hit);
 		}
 	}
