@@ -1,3 +1,7 @@
+// Beginning Game Programming, Second Edition
+// Chapter 10
+// Paddle_Game program header file
+
 
 #ifndef _GAME_H
 #define _GAME_H 1
@@ -13,17 +17,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "Constants.h"
+#include "Object.h"
+#include "Balls.h"
+#include "Paddle.h"
+
 //framework-specific headers
 #include "dxgraphics.h"
 //#include "dxaudio.h"
 #include "dxinput.h"
 
+//application title
+#define APPTITLE "Paddle_Game"
+
+//screen setup
+#define FULLSCREEN 0       //0 = windowed, 1 = fullscreen
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 //function prototypes
 int Game_Init(HWND);
 void Game_Run(HWND);
 void Game_End(HWND);
+
+// Score
+extern int score1 = 0;
+extern int score2 = 0;
+extern int totalTime = 0;
+extern bool isIncreaseScore = false;
 
 
 //sprite structure
@@ -39,4 +59,3 @@ typedef struct {
 
 
 #endif
-
