@@ -79,7 +79,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	//set up the screen in windowed or fullscreen mode?
 	DWORD style;
 	if (FULLSCREEN)
-		style = WS_EX_TOPMOST | WS_VISIBLE | WS_POPUP;
+		style = WS_EX_WINDOWEDGE;
 	else
 		style = WS_OVERLAPPED;
 
@@ -87,7 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	hWnd = CreateWindow(
 		APPTITLE,              //window class
 		APPTITLE,              //title bar
-		style,                 //window style
+		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,                 //window style
 		CW_USEDEFAULT,         //x position of window
 		CW_USEDEFAULT,         //y position of window
 		SCREEN_WIDTH,          //width of the window

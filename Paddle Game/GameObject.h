@@ -2,14 +2,10 @@
 #include "d3d9.h"
 #include "d3dx9.h"
 #include "dxgraphics.h"
-#include "game.h"
 class GameObject
 {
 protected:
 	
-	// functions
-	
-	// virtual functions
 	virtual void Move();
 	
 public:
@@ -27,10 +23,9 @@ public:
 	void SetPosition(int, int);
 	void SetVelocity(int, int);
 	void SetSize(int, int);
-	//void LoadTexture(char*, D3DCOLOR);
 	int InitTexture(char*, D3DCOLOR);
 
-	// getter 
+	// getter - setter
 	LPDIRECT3DTEXTURE9 GetTexture();
 	int X();
 	int Y();

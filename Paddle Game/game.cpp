@@ -6,7 +6,7 @@
 #include <fstream>
 #include "Ball.h"
 #include "Paddle.h"
-#include <string>
+#include "GUI.h"
 using namespace std;
 //background image
 LPDIRECT3DSURFACE9 back;
@@ -21,7 +21,7 @@ HRESULT result;
 int score1 = 0;
 int score2 = 0;
 int totalTime = 0;
-bool isIncreaseScore = false;
+int startTimer;
 // Font
 ID3DXFont *font;
 RECT rScore1;
@@ -31,20 +31,24 @@ std::string message1;
 std::string message2;
 std::string timerText;
 
+
 Ball ball;
 Paddle leftPaddle;
 Paddle rightPaddle;
 // keep track the MouseY
 ofstream myfile("trace.txt");
 
-int GenerateNewPostion() {
 
-	//int v3 = rand() % 30 + 1985;// v3 in the range 1985-2014 // b-a-1   + a
+void CountTime() {
+	if (GetTickCount() - startTimer > 1000) {
+		totalTime++;
+		startTimer = GetTickCount();
+	}
+}
+int GenerateNewPostion() {
 	int random = rand() % 2 + 1;
 	return (random == 2) ? 1 : -1;
 }
-
-//initializes the game
 void UpdateLables() {
 	message1 = to_string(score1);
 	message2 = to_string(score2);
@@ -61,11 +65,13 @@ void KeepTrack(int mouseY) {
 		//MessageBox(hwnd, "Error initializing the mouse", "Error", MB_OK);
 	}
 }
-
+//initializes the game
 int Game_Init(HWND hwnd)
 {
+	
 	//set random number seed
 	srand(time(NULL));
+	startTimer = GetTickCount();
 	//initialize mouse
 	if (!Init_Mouse(hwnd))
 	{
@@ -119,14 +125,14 @@ int Game_Init(HWND hwnd)
 	rightPaddle.width = 26;
 	rightPaddle.height = 90;
 
-	// Init font
-	font = NULL;
+	
+
+	
 	HRESULT fontResult = D3DXCreateFont(d3ddev, 40, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial", &font);
 	if (!SUCCEEDED(fontResult)) {
 		return false;
 	}
-
 	SetRect(&rScore1, 0, 0, 200, 400);
 	SetRect(&rScore2, SCREEN_WIDTH - 200, 0, SCREEN_WIDTH, 400);
 	SetRect(&rTimer, (SCREEN_WIDTH / 2) - 50, 0, (SCREEN_WIDTH / 2) + 50, 100);
@@ -146,11 +152,12 @@ void Game_Run(HWND hwnd)
 	//update mouse and keyboard
 	Poll_Mouse();
 	Poll_Keyboard();
-	//CountTime();
+	CountTime();
 	//after short delay, ready for next frame?
 	//this keeps the game running at a steady frame rate
 	if (GetTickCount() - start >= 30)
 	{
+		
 		//reset timing
 		start = GetTickCount();
 
@@ -161,10 +168,7 @@ void Game_Run(HWND hwnd)
 		//bounce the ball at screen edges
 		if (ball.x > SCREEN_WIDTH - ball.width)
 		{
-			//ball.x -= ball.width;
-			//ball.movex *= -1;
-			////      PlaySound(sound_bounce);
-			// player 2 win
+			// player 1 win
 			score1++;
 			ball.x = SCREEN_WIDTH / 2;
 			ball.y = SCREEN_HEIGHT / 2;
@@ -172,9 +176,6 @@ void Game_Run(HWND hwnd)
 		}
 		else if (ball.x < 0)
 		{
-			/*ball.x += ball.width;
-			ball.movex *= -1;*/
-			//      PlaySound(sound_bounce);
 			// player 2 win
 			score2++;
 			ball.x = SCREEN_WIDTH / 2;
@@ -186,15 +187,13 @@ void Game_Run(HWND hwnd)
 		{
 			ball.y -= ball.height;
 			ball.movey *= -1;
-			//    PlaySound(sound_bounce);
 		}
 		else if (ball.y < 0)
 		{
 			ball.y += ball.height;
 			ball.movey *= -1;
-			//    PlaySound(sound_bounce);
+			// PlaySound(sound_bounce);
 		}
-
 
 
 		//check for left arrow
@@ -232,7 +231,6 @@ void Game_Run(HWND hwnd)
 		{
 			ball.x -= ball.movey;
 			ball.movex *= -1;
-			isIncreaseScore = true;
 		}
 	}
 	//start rendering
@@ -276,6 +274,9 @@ void Game_Run(HWND hwnd)
 
 		UpdateLables();
 		// draw text:
+		/*gui->DrawLabel(message1, rScore1, DT_LEFT);
+		gui->DrawLabel(message2, rScore2, DT_RIGHT);
+		gui->DrawLabel(timerText, rTimer, DT_CENTER);*/
 		if (font != NULL) {
 			font->DrawTextA(NULL, message1.c_str(), -1, &rScore1, DT_LEFT, D3DCOLOR_XRGB(255, 255, 255));
 		}
@@ -319,6 +320,9 @@ void Game_End(HWND hwnd)
 
 	if (back != NULL)
 		back->Release();
+	if (font != NULL) {
+		font->Release();
+	}
 
 	if (sprite_handler != NULL)
 		sprite_handler->Release();

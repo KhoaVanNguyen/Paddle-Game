@@ -1,6 +1,5 @@
 #include "GameObject.h"
 
-
 void GameObject::SetPosition(int newX, int newY) {
 	x = newX;
 	y = newY;
@@ -23,9 +22,6 @@ int GameObject::InitTexture(char *imageUrl, D3DCOLOR color)
 	return 1;
 }
 
-//void GameObject::LoadTexture(char *imageUrl, D3DCOLOR color) {
-//	GameObjectTexture = LoadTexture(imageUrl, color);
-//}
 bool GameObject::isCollisonWith(GameObject secondObj) {
 	RECT rect1;
 	rect1.left = x + 1;

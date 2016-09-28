@@ -16,7 +16,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "Constants.h"
 //framework-specific headers
 #include "dxgraphics.h"
 //#include "dxaudio.h"
