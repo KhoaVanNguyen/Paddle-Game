@@ -210,7 +210,7 @@ void Game_Run(HWND hwnd)
 
 		//check for right arrow
 		else if (Key_Down(DIK_S))
-			leftPaddle.y += 5;
+			rightPaddle.y += 5;
 
 
 		//  constraint the paddle to the screen's edges
