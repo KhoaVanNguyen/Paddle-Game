@@ -2,14 +2,9 @@
 #include "GameObject.h"
 class Ball: public GameObject
 {
+protected:
+	virtual void Move();
 public:
-	int movex, movey;
-	LPDIRECT3DTEXTURE9 Texture;
-	void Move();
-private:
-	
-public:
-	int Init();
 	Ball();
 	~Ball();
 };

@@ -17,9 +17,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include "Object.h"
-#include "Balls.h"
-#include "Paddle.h"
 
 //framework-specific headers
 #include "dxgraphics.h"
@@ -39,11 +36,7 @@ int Game_Init(HWND);
 void Game_Run(HWND);
 void Game_End(HWND);
 
-// Score
-extern int score1 = 0;
-extern int score2 = 0;
-extern int totalTime = 0;
-extern bool isIncreaseScore = false;
+
 
 
 //sprite structure

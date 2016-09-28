@@ -6,6 +6,13 @@
 class GameObject
 {
 protected:
+	
+	// functions
+	
+	// virtual functions
+	virtual void Move();
+	
+public:
 	int x, y;
 	int width, height;
 	int movex, movey;
@@ -13,7 +20,24 @@ protected:
 	int animdelay, animcount;
 	int scalex, scaley;
 	int rotation, rotaterate;
-public:
+
+	LPDIRECT3DTEXTURE9 GameObjectTexture;
+	char *imageUrl;
+	bool isCollisonWith(GameObject);
+	void SetPosition(int, int);
+	void SetVelocity(int, int);
+	void SetSize(int, int);
+	//void LoadTexture(char*, D3DCOLOR);
+	int InitTexture(char*, D3DCOLOR);
+
+	// getter 
+	LPDIRECT3DTEXTURE9 GetTexture();
+	int X();
+	int Y();
+	int VelX();
+	int VelY();
+	int Width();
+	int Height();
 	GameObject();
 	~GameObject();
 };

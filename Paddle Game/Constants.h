@@ -33,3 +33,4 @@ extern LPDIRECTINPUTDEVICE8 dimouse;
 extern LPDIRECTINPUTDEVICE8 dikeyboard;
 extern DIMOUSESTATE mouse_state;
 #endif
+// Score

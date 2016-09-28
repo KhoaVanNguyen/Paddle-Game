@@ -1,13 +1,11 @@
 #pragma once
 #include "GameObject.h"
-class Paddle: public GameObject
+class Paddle : public GameObject
 {
+protected:
+	virtual void Move();
 public:
-	LPDIRECT3DTEXTURE9 Texture;
-public:
-	void Move(int);
-	int Init();
-	Paddle(int);
+	Paddle();
 	~Paddle();
 };
 

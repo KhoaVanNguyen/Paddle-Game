@@ -4,6 +4,8 @@
 #include <iostream>
 #include "game.h"
 #include <fstream>
+#include "Ball.h"
+#include "Paddle.h"
 using namespace std;
 //background image
 LPDIRECT3DSURFACE9 back;
@@ -11,26 +13,14 @@ LPDIRECT3DSURFACE9 back;
 //sprite handler
 LPD3DXSPRITE sprite_handler;
 
-//ball sprite
-//LPDIRECT3DTEXTURE9 ball_image;
-//SPRITE ball;
-
-//paddle sprite
-//LPDIRECT3DTEXTURE9 paddle_image;
-//SPRITE paddle;
-
-//paddle sprite2
-//LPDIRECT3DTEXTURE9 paddle_image2;
-//SPRITE paddle2;
-//the wave sound
-//CSound *sound_bounce;
-//CSound *sound_hit;
-
 //misc
 long start = GetTickCount();
 HRESULT result;
-
-
+// Score
+ int score1 = 0;
+ int score2 = 0;
+ int totalTime = 0;
+ bool isIncreaseScore = false;
 // Font
 ID3DXFont *font;
 RECT rScore1;
@@ -40,12 +30,18 @@ std::string message1;
 std::string message2;
 std::string timerText;
 
-Balls ball;
-Paddle paddle1(1);
-Paddle paddle2(2);
+Ball ball;
+Paddle leftPaddle;
+Paddle rightPaddle;
 // keep track the MouseY
 ofstream myfile("trace.txt");
 
+int GenerateNewPostion() {
+
+	//int v3 = rand() % 30 + 1985;// v3 in the range 1985-2014 // b-a-1   + a
+	int random = rand() % 2 + 1;
+	return (random == 2) ? 1 : -1;
+}
 
 //initializes the game
 void UpdateLables() {
@@ -93,44 +89,34 @@ int Game_Init(HWND hwnd)
 	if (back == NULL)
 		return 0;
 
-	ball.Init();
-	paddle1.Init();
-	paddle2.Init();
+	ball.InitTexture("ball.bmp", D3DCOLOR_XRGB(255, 0, 255));
+	if (ball.GetTexture() == NULL) {
+		return 0;
+	}
+	ball.x = SCREEN_WIDTH / 2;
+	ball.y = SCREEN_HEIGHT / 2;
+	ball.width = 12;
+	ball.height = 12;
+	ball.movex = 8;
+	ball.movey = -8;
 
-	//score
-
-
-	//load the ball sprite
-	//ball_image = LoadTexture("ball.bmp", D3DCOLOR_XRGB(255, 0, 255));
-	//if (ball_image == NULL)
-		//return 0;
-
-	//set the ball's properties
-	//ball.x = SCREEN_WIDTH / 2;
-	//ball.y = SCREEN_HEIGHT / 2;
-	//ball.width = 12;
-	//ball.height = 12;
-	//ball.movex = 8;
-	//ball.movey = -8;
-
-	//load the paddle sprite
-	//paddle_image = LoadTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
-	//if (paddle_image == NULL)
-		//return 0;
-	//set paddle properties
-	//paddle.x = 40;
-	//paddle.y = SCREEN_HEIGHT / 2;
-	//paddle.width = 26;
-	//paddle.height = 90;
-
-
-	/*paddle_image2 = LoadTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
-	//set paddle2 properties
-	paddle2.x = SCREEN_WIDTH - 66;
-	paddle2.y = SCREEN_HEIGHT / 2;
-	paddle2.width = 26;
-	paddle2.height = 90;*/
-
+	leftPaddle.InitTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
+	if (leftPaddle.GetTexture() == NULL) {
+		return 0;
+	}
+	leftPaddle.x = 40;
+	leftPaddle.y = SCREEN_HEIGHT / 2;
+	leftPaddle.width = 26;
+	leftPaddle.height = 90;
+	
+	rightPaddle.InitTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
+	if (rightPaddle.GetTexture() == NULL) {
+		return 0;
+	}
+	rightPaddle.x = SCREEN_WIDTH - 66;
+	rightPaddle.y = SCREEN_HEIGHT / 2;
+	rightPaddle.width = 26;
+	rightPaddle.height = 90;
 
 	// Init font
 	font = NULL;
@@ -144,32 +130,12 @@ int Game_Init(HWND hwnd)
 	SetRect(&rScore2, SCREEN_WIDTH - 200, 0, SCREEN_WIDTH, 400);
 	SetRect(&rTimer, (SCREEN_WIDTH / 2) - 50, 0, (SCREEN_WIDTH / 2) + 50, 100);
 	UpdateLables();
-	//load bounce wave file
-	//    sound_bounce = LoadSound("bounce.wav");
-	/*  if (sound_bounce == NULL)
-	return 0;*/
-
-	//load the hit wave file
-	//    sound_hit = LoadSound("hit.wav");
-	/* if (sound_hit == NULL)
-	return 0;
-	*/
-	//return okay
 	return 1;
-}
-
-int Collision(Object obj1, Object obj2)
-{
-		RECT dest;
-		obj1.UpdateRect();
-		obj2.UpdateRect();
-	return IntersectRect(&dest, &obj1.box, &obj2.box);
 }
 
 //the main game loop
 void Game_Run(HWND hwnd)
 {
-	//ball position vector
 	D3DXVECTOR3 position(0, 0, 0);
 
 	//make sure the Direct3D device is valid
@@ -179,7 +145,7 @@ void Game_Run(HWND hwnd)
 	//update mouse and keyboard
 	Poll_Mouse();
 	Poll_Keyboard();
-
+	//CountTime();
 	//after short delay, ready for next frame?
 	//this keeps the game running at a steady frame rate
 	if (GetTickCount() - start >= 30)
@@ -188,10 +154,10 @@ void Game_Run(HWND hwnd)
 		start = GetTickCount();
 
 		//move the ball sprite
-		ball.Move();
-		paddle1.Move(1);
-		paddle2.Move(2);
-		/*//bounce the ball at screen edges
+		ball.x += ball.movex;
+		ball.y += ball.movey;
+
+		//bounce the ball at screen edges
 		if (ball.x > SCREEN_WIDTH - ball.width)
 		{
 			//ball.x -= ball.width;
@@ -201,9 +167,7 @@ void Game_Run(HWND hwnd)
 			score1++;
 			ball.x = SCREEN_WIDTH / 2;
 			ball.y = SCREEN_HEIGHT / 2;
-			ball.movex *= -1;
-
-
+			ball.movex *= GenerateNewPostion();
 		}
 		else if (ball.x < 0)
 		{
@@ -211,10 +175,10 @@ void Game_Run(HWND hwnd)
 			ball.movex *= -1;*/
 			//      PlaySound(sound_bounce);
 			// player 2 win
-			/*score2++;
+			score2++;
 			ball.x = SCREEN_WIDTH / 2;
 			ball.y = SCREEN_HEIGHT / 2;
-			ball.movex *= 1;
+			ball.movex *= GenerateNewPostion();
 		}
 
 		if (ball.y > SCREEN_HEIGHT - ball.height)
@@ -229,102 +193,47 @@ void Game_Run(HWND hwnd)
 			ball.movey *= -1;
 			//    PlaySound(sound_bounce);
 		}
-		*/
-		//move the paddle
-		/*paddle.x += Mouse_X();
-		if (paddle.x > SCREEN_WIDTH - paddle.width)
-		paddle.x = SCREEN_WIDTH - paddle.width;
-		else if (paddle.x < 0)
-		paddle.x = 0;*/
+
+
 
 		//check for left arrow
-
-		/*if (Key_Down(DIK_UPARROW))
-		{
-			paddle1.y -= 5;
-		}
-			
+		if (Key_Down(DIK_UPARROW))
+			leftPaddle.y -= 5;
 
 		//check for right arrow
 		else if (Key_Down(DIK_DOWNARROW))
-			paddle1.y += 5;
-
-		//check for left arrow
-		if (Key_Down(DIK_LEFTARROW))
-			paddle1.x -= 5;
-
-		//check for right arrow
-		else if (Key_Down(DIK_RIGHTARROW))
-			paddle1.x += 5;
+			leftPaddle.y += 5;
 
 		// For paddle2
 		if (Key_Down(DIK_W))
-			paddle2.y -= 5;
+			rightPaddle.y -= 5;
 
 		//check for right arrow
 		else if (Key_Down(DIK_S))
-			paddle2.y += 5;
-
-		if (Key_Down(DIK_A))
-			paddle2.x -= 5;
-
-		//check for right arrow
-		else if (Key_Down(DIK_D))
-			paddle2.x += 5;
-
-		if (paddle1.y <= 0) {
-			paddle1.y = 0;
-		}
-		if (paddle1.y + (paddle1.box.bottom - paddle1.box.top) >= SCREEN_HEIGHT) {
-			paddle1.y = SCREEN_HEIGHT - (paddle1.box.bottom - paddle1.box.top);
-		}
-		if (paddle2.y <= 0) {
-			paddle2.y = 0;
-		}
-		if (paddle2.y + (paddle2.box.bottom - paddle2.box.top) >= SCREEN_HEIGHT) {
-			paddle2.y = SCREEN_HEIGHT - (paddle2.box.bottom - paddle2.box.top);
-		}
-
-		if (paddle1.x <= 0) {
-			paddle1.x = 0;
-		}
-		if (paddle1.x + (paddle1.box.right - paddle1.box.left) >= SCREEN_WIDTH) {
-			paddle1.x = SCREEN_WIDTH - (paddle1.box.right - paddle1.box.left);
-		}
-		if (paddle2.x <= 0) {
-			paddle2.x = 0;
-		}
-		if (paddle2.x + (paddle2.box.right - paddle2.box.left) >= SCREEN_WIDTH) {
-			paddle2.x = SCREEN_WIDTH - (paddle2.box.right - paddle2.box.left);
-		}
-
-		paddle1.UpdateRect();
-		paddle2.UpdateRect();
-		// !=0 means mouse has moved up or down
-		/*if (Mouse_Y() != 0) {
-			int tempValue = abs(Mouse_Y()) / 2;
-			if (Mouse_Y() > 0) {
-				paddle.y += tempValue;
-			}
-			else {
-				paddle.y -= tempValue;
-			}
-		}
-		KeepTrack(Mouse_Y());*/
+			leftPaddle.y += 5;
 
 
-		
+		//  constraint the paddle to the screen's edges
+		if (leftPaddle.y <= 0) {
+			leftPaddle.y = 0;
+		}
+		if (leftPaddle.y + leftPaddle.height >= SCREEN_HEIGHT) {
+			leftPaddle.y = SCREEN_HEIGHT - leftPaddle.height;
+		}
+		if (rightPaddle.y <= 0) {
+			rightPaddle.y = 0;
+		}
+		if (rightPaddle.y + rightPaddle.height >= SCREEN_HEIGHT) {
+			rightPaddle.y = SCREEN_HEIGHT - rightPaddle.height;
+		}
 		//see if ball hit the paddle
-		if (Collision(paddle1, ball) || Collision(paddle2, ball))
+		if (ball.isCollisonWith(leftPaddle) || ball.isCollisonWith(rightPaddle))
 		{
-			ball.x -= ball.movex;
+			ball.x -= ball.movey;
 			ball.movex *= -1;
 			isIncreaseScore = true;
-
-			//   PlaySound(sound_hit);
 		}
 	}
-
 	//start rendering
 	if (d3ddev->BeginScene())
 	{
@@ -335,30 +244,30 @@ void Game_Run(HWND hwnd)
 		sprite_handler->Begin(D3DXSPRITE_ALPHABLEND);
 
 		//draw the ball
-		position.x = (float)ball.x;
-		position.y = (float)ball.y;
+		position.x = (float)ball.X();
+		position.y = (float)ball.Y();
 		sprite_handler->Draw(
-			ball.Texture,
+			ball.GetTexture(),
 			NULL,
 			NULL,
 			&position,
 			D3DCOLOR_XRGB(255, 255, 255));
 
 		//draw the paddle
-		position.x = (float)paddle1.x;
-		position.y = (float)paddle1.y;
+		position.x = (float)leftPaddle.X();
+		position.y = (float)leftPaddle.Y();
 		sprite_handler->Draw(
-			paddle1.Texture,
+			leftPaddle.GetTexture(),
 			NULL,
 			NULL,
 			&position,
 			D3DCOLOR_XRGB(255, 255, 255));
 
 		//draw the paddle2
-		position.x = (float)paddle2.x;
-		position.y = (float)paddle2.y;
+		position.x = (float)rightPaddle.X();
+		position.y = (float)rightPaddle.Y();
 		sprite_handler->Draw(
-			paddle2.Texture,
+			rightPaddle.GetTexture(),
 			NULL,
 			NULL,
 			&position,
@@ -398,23 +307,19 @@ void Game_Run(HWND hwnd)
 void Game_End(HWND hwnd)
 {
 
-	ball.~Balls();
-	paddle1.~Paddle();
-	paddle2.~Paddle();
+	if (ball.GetTexture() != NULL)
+		ball.~Ball();
+
+	if (leftPaddle.GetTexture() != NULL)
+		leftPaddle.~Paddle();
+
+	if (rightPaddle.GetTexture() != NULL)
+		rightPaddle.~Paddle();
+	
 	if (back != NULL)
 		back->Release();
 
 	if (sprite_handler != NULL)
 		sprite_handler->Release();
-	if (font != NULL) {
-		font->Release();
-		font = 0;
-	}
-	//if (sound_bounce != NULL)
-	//    delete sound_bounce;
-
-	//if (sound_hit != NULL)
-	//    delete sound_hit;
-
 
 }
