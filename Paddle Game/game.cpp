@@ -14,7 +14,6 @@ LPD3DXSPRITE sprite_handler;
 //ball sprite
 LPDIRECT3DTEXTURE9 ball_image;
 SPRITE ball;
-
 //paddle sprite
 LPDIRECT3DTEXTURE9 paddle_image;
 SPRITE paddle;
@@ -139,7 +138,6 @@ int Game_Init(HWND hwnd)
 	paddle.width = 26;
 	paddle.height = 90;
 
-
 	paddle_image2 = LoadTexture("paddle.bmp", D3DCOLOR_XRGB(255, 255, 255));
 	//set paddle2 properties
 	paddle2.x = SCREEN_WIDTH - 66;
@@ -227,8 +225,6 @@ void Game_Run(HWND hwnd)
 			ball.x = SCREEN_WIDTH / 2;
 			ball.y = SCREEN_HEIGHT / 2;
 			ball.movex *= GenerateNewPostion();
-
-
 		}
 		else if (ball.x < 0)
 		{
@@ -308,7 +304,6 @@ void Game_Run(HWND hwnd)
 			ball.x -= ball.movey;
 			ball.movex *= -1;
 			isIncreaseScore = true;
-
 			//   PlaySound(sound_hit);
 		}
 	}
@@ -330,7 +325,6 @@ void Game_Run(HWND hwnd)
 			NULL,
 			&position,
 			D3DCOLOR_XRGB(255, 255, 255));
-
 		//draw the paddle
 		position.x = (float)paddle.x;
 		position.y = (float)paddle.y;
@@ -384,7 +378,6 @@ void Game_Run(HWND hwnd)
 //frees memory and cleans up before the game ends
 void Game_End(HWND hwnd)
 {
-
 	if (ball_image != NULL)
 		ball_image->Release();
 
@@ -407,6 +400,4 @@ void Game_End(HWND hwnd)
 
 	//if (sound_hit != NULL)
 	//    delete sound_hit;
-
-
 }

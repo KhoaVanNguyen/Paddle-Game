@@ -5,7 +5,7 @@
 
 #ifndef _DXINPUT_H
 #define _DXINPUT_H 1
-
+#include "Constants.h"
 #include <dinput.h>
 
 //function prototypes
@@ -22,11 +22,7 @@ int Mouse_Y();
 void Kill_Mouse();
 
 
-//DirectInput objects, devices, and states
-extern LPDIRECTINPUT8 dinput;
-extern LPDIRECTINPUTDEVICE8 dimouse;
-extern LPDIRECTINPUTDEVICE8 dikeyboard;
-extern DIMOUSESTATE mouse_state;
+
 
 
 #endif
