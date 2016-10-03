@@ -17,9 +17,9 @@
 #define APPTITLE "Paddle_Game"
 
 //screen setup
-#define FULLSCREEN 1     //0 = windowed, 1 = fullscreen
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define FULLSCREEN 0   //0 = windowed, 1 = fullscreen
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 //variable declarations
 extern LPDIRECT3D9 d3d;
 extern LPDIRECT3DDEVICE9 d3ddev;

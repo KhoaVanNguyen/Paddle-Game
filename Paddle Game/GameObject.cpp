@@ -24,19 +24,22 @@ int GameObject::InitTexture(char *imageUrl, D3DCOLOR color)
 
 bool GameObject::isCollisonWith(GameObject secondObj) {
 	RECT rect1;
-	rect1.left = x + 1;
-	rect1.top = y + 1;
-	rect1.right = x + width - 1;
-	rect1.bottom = y + height - 1;
+	rect1.left = x ;
+	rect1.top = y ;
+	rect1.right = x + width ;
+	rect1.bottom = y + height ;
 
 	RECT rect2;
-	rect2.left = secondObj.x + 1;
-	rect2.top = secondObj.y + 1;
-	rect2.right = secondObj.x + secondObj.width - 1;
-	rect2.bottom = secondObj.y + secondObj.height - 1;
+	rect2.left = secondObj.x ;
+	rect2.top = secondObj.y ;
+	rect2.right = secondObj.x + secondObj.width ;
+	rect2.bottom = secondObj.y + secondObj.height ;
 
-	RECT dest;
-	return IntersectRect(&dest, &rect1, &rect2);
+
+	return  rect1.right >= rect2.left &&
+		rect1.left <= rect2.right &&
+		rect1.top <= rect2.bottom &&
+		rect1.bottom >= rect2.top;
 }
 GameObject::GameObject()
 {

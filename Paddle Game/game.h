@@ -26,10 +26,6 @@
 #define APPTITLE "Paddle_Game"
 
 //screen setup
-#define FULLSCREEN 0       //0 = windowed, 1 = fullscreen
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
-
 //function prototypes
 int Game_Init(HWND);
 void Game_Run(HWND);

@@ -35,6 +35,8 @@ std::string timerText;
 Ball ball;
 Paddle leftPaddle;
 Paddle rightPaddle;
+int preMouseY = mouse_state.lY;
+int paddleSpeed = 10;
 // keep track the MouseY
 ofstream myfile("trace.txt");
 
@@ -52,13 +54,13 @@ int GenerateNewPostion() {
 void UpdateLables() {
 	message1 = to_string(score1);
 	message2 = to_string(score2);
-	timerText = to_string(totalTime) + 's';
+	timerText = to_string(totalTime) + " s";
 }
-void KeepTrack(int mouseY) {
+void KeepTrack(int mouseY, std::string text) {
 
 	if (myfile.is_open())
 	{
-		myfile << "Mouse_Y = " << mouseY << "\n";
+		myfile << text << " :: " << mouseY << "\n";
 		//myfile.close();
 	}
 	else {
@@ -92,7 +94,7 @@ int Game_Init(HWND hwnd)
 		return 0;
 
 	//load the background image
-	back = LoadSurface("background.bmp", NULL);
+	back = LoadSurface("background.png", NULL);
 	if (back == NULL)
 		return 0;
 
@@ -155,8 +157,16 @@ void Game_Run(HWND hwnd)
 	CountTime();
 	//after short delay, ready for next frame?
 	//this keeps the game running at a steady frame rate
+	if (ball.isCollisonWith(leftPaddle) || ball.isCollisonWith(rightPaddle))
+	{
+		ball.x -= ball.movey;
+		ball.movex *= -1;
+	}
+	int mouseX = mouse_state.lX;
+	int mouseY = mouse_state.lY;
 	if (GetTickCount() - start >= 30)
 	{
+		//see if ball hit the paddle
 		
 		//reset timing
 		start = GetTickCount();
@@ -198,19 +208,26 @@ void Game_Run(HWND hwnd)
 
 		//check for left arrow
 		if (Key_Down(DIK_UPARROW))
-			leftPaddle.y -= 5;
+			leftPaddle.y -= paddleSpeed;
 
 		//check for right arrow
 		else if (Key_Down(DIK_DOWNARROW))
-			leftPaddle.y += 5;
+			leftPaddle.y += paddleSpeed;
 
 		// For paddle2
-		if (Key_Down(DIK_W))
-			rightPaddle.y -= 5;
 
-		//check for right arrow
-		else if (Key_Down(DIK_S))
-			rightPaddle.y += 5;
+		
+		if (mouseX < 0) { mouseX = 0;}
+		if (mouseY < 0) { mouseY = 0;}
+		if (mouseX > SCREEN_WIDTH) { mouseX = SCREEN_WIDTH; }
+		if (mouseY > SCREEN_HEIGHT) { mouseY = SCREEN_HEIGHT; }
+
+		//if (Key_Down(DIK_W))
+		//	rightPaddle.y -= paddleSpeed;
+
+		////check for right arrow
+		//else if (Key_Down(DIK_S))
+		//	rightPaddle.y += paddleSpeed;
 
 
 		//  constraint the paddle to the screen's edges
@@ -226,16 +243,14 @@ void Game_Run(HWND hwnd)
 		if (rightPaddle.y + rightPaddle.height >= SCREEN_HEIGHT) {
 			rightPaddle.y = SCREEN_HEIGHT - rightPaddle.height;
 		}
-		//see if ball hit the paddle
-		if (ball.isCollisonWith(leftPaddle) || ball.isCollisonWith(rightPaddle))
-		{
-			ball.x -= ball.movey;
-			ball.movex *= -1;
-		}
+		
 	}
+	rightPaddle.y += mouseY;
+	KeepTrack(mouseY, "Mouse Y");
 	//start rendering
 	if (d3ddev->BeginScene())
 	{
+		d3ddev->ShowCursor(TRUE);
 		//erase the entire background
 		d3ddev->StretchRect(back, NULL, backbuffer, NULL, D3DTEXF_NONE);
 
