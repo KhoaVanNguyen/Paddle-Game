@@ -30,6 +30,7 @@ int Init_DirectInput(HWND hwnd)
 	result = dinput->CreateDevice(GUID_SysMouse, &dimouse, NULL);
 	if (result != DI_OK)
 		return 0;
+
 	//initialize the keyboard
 	result = dinput->CreateDevice(GUID_SysKeyboard, &dikeyboard, NULL);
 	if (result != DI_OK)

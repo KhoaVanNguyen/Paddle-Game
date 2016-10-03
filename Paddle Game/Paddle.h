@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+
 class Paddle : public GameObject
 {
 protected:
@@ -7,5 +8,6 @@ protected:
 public:
 	Paddle();
 	~Paddle();
+	friend class Ball;
 };
 

@@ -1,10 +1,13 @@
 #pragma once
 #include "GameObject.h"
+#include "Constants.h"
 class Ball: public GameObject
 {
-protected:
+public:
 	virtual void Move();
 public:
+	void ResetPosition();
+	int IsScore();
 	Ball();
 	~Ball();
 };

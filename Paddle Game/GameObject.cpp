@@ -22,25 +22,6 @@ int GameObject::InitTexture(char *imageUrl, D3DCOLOR color)
 	return 1;
 }
 
-bool GameObject::isCollisonWith(GameObject secondObj) {
-	RECT rect1;
-	rect1.left = x ;
-	rect1.top = y ;
-	rect1.right = x + width ;
-	rect1.bottom = y + height ;
-
-	RECT rect2;
-	rect2.left = secondObj.x ;
-	rect2.top = secondObj.y ;
-	rect2.right = secondObj.x + secondObj.width ;
-	rect2.bottom = secondObj.y + secondObj.height ;
-
-
-	return  rect1.right >= rect2.left &&
-		rect1.left <= rect2.right &&
-		rect1.top <= rect2.bottom &&
-		rect1.bottom >= rect2.top;
-}
 GameObject::GameObject()
 {
 	
@@ -77,4 +58,44 @@ int GameObject::Width() {
 }
 int GameObject::Height() {
 	return height;
+}
+
+void GameObject::Draw(LPD3DXSPRITE spr_handler)
+{
+	D3DXVECTOR3 position(0, 0, 0);
+	position.x = X();
+	position.y = Y();
+	spr_handler->Draw(GetTexture(),
+		NULL,
+		NULL,
+		&position,
+		D3DCOLOR_XRGB(255, 255, 255));
+}
+
+RECT GameObject::GetRect()
+{
+	RECT rResult;
+	rResult.top = y;
+	rResult.left = x;
+	rResult.bottom = y + height;
+	rResult.right = x + width;
+	return rResult;
+}
+
+int CheckCollision(GameObject obj1, GameObject obj2)
+{
+	int centerx, centery;
+	centerx = obj1.x + obj1.width / 2;
+	centery = obj1.y + obj1.height / 2;
+	if (obj1.x < obj2.x + obj2.width &&
+		obj1.x + obj1.width > obj2.x &&
+		obj1.y < obj2.y + obj2.height &&
+		obj1.height + obj1.y > obj2.y)
+	{
+		if ((centery <= obj2.y) || (centery >= obj2.y + obj2.height))
+			return 1;
+		else if ((centerx <= obj2.x) || (centerx <= obj2.x + obj2.width))
+			return 2;
+	}
+	return 0;
 }

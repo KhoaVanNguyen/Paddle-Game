@@ -17,11 +17,6 @@ LPD3DXSPRITE sprite_handler;
 //misc
 long start = GetTickCount();
 HRESULT result;
-// Score
-int score1 = 0;
-int score2 = 0;
-int totalTime = 0;
-int startTimer;
 // Font
 ID3DXFont *font;
 RECT rScore1;
@@ -31,12 +26,15 @@ std::string message1;
 std::string message2;
 std::string timerText;
 
+// Score
+int score1 = 0;
+int score2 = 0;
+int totalTime = 0;
+int startTimer;
 
 Ball ball;
 Paddle leftPaddle;
 Paddle rightPaddle;
-int preMouseY = mouse_state.lY;
-int paddleSpeed = 10;
 // keep track the MouseY
 ofstream myfile("trace.txt");
 
@@ -54,13 +52,13 @@ int GenerateNewPostion() {
 void UpdateLables() {
 	message1 = to_string(score1);
 	message2 = to_string(score2);
-	timerText = to_string(totalTime) + " s";
+	timerText = to_string(totalTime) + 's';
 }
-void KeepTrack(int mouseY, std::string text) {
+void KeepTrack(int mouseY) {
 
 	if (myfile.is_open())
 	{
-		myfile << text << " :: " << mouseY << "\n";
+		myfile << "Mouse_Y = " << mouseY << "\n";
 		//myfile.close();
 	}
 	else {
@@ -127,7 +125,10 @@ int Game_Init(HWND hwnd)
 	rightPaddle.width = 26;
 	rightPaddle.height = 90;
 
-	
+	//Init score
+	score1 = 0;
+	score2 = 0;
+	totalTime = 0;
 
 	
 	HRESULT fontResult = D3DXCreateFont(d3ddev, 40, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
@@ -157,78 +158,46 @@ void Game_Run(HWND hwnd)
 	CountTime();
 	//after short delay, ready for next frame?
 	//this keeps the game running at a steady frame rate
-	if (ball.isCollisonWith(leftPaddle) || ball.isCollisonWith(rightPaddle))
-	{
-		ball.x -= ball.movey;
-		ball.movex *= -1;
-	}
-	int mouseX = mouse_state.lX;
-	int mouseY = mouse_state.lY;
+	
 	if (GetTickCount() - start >= 30)
 	{
-		//see if ball hit the paddle
 		
 		//reset timing
 		start = GetTickCount();
 
-		//move the ball sprite
-		ball.x += ball.movex;
-		ball.y += ball.movey;
+		ball.Move();
 
-		//bounce the ball at screen edges
-		if (ball.x > SCREEN_WIDTH - ball.width)
-		{
-			// player 1 win
-			score1++;
-			ball.x = SCREEN_WIDTH / 2;
-			ball.y = SCREEN_HEIGHT / 2;
-			ball.movex *= GenerateNewPostion();
-		}
-		else if (ball.x < 0)
-		{
-			// player 2 win
+		int isScore = ball.IsScore();
+
+		if (isScore == 2) {
 			score2++;
-			ball.x = SCREEN_WIDTH / 2;
-			ball.y = SCREEN_HEIGHT / 2;
-			ball.movex *= GenerateNewPostion();
+		}
+		else if (isScore == 1) {
+			score1++;
 		}
 
-		if (ball.y > SCREEN_HEIGHT - ball.height)
-		{
-			ball.y -= ball.height;
-			ball.movey *= -1;
-		}
-		else if (ball.y < 0)
-		{
-			ball.y += ball.height;
-			ball.movey *= -1;
-			// PlaySound(sound_bounce);
-		}
 
+	
+		
 
 		//check for left arrow
 		if (Key_Down(DIK_UPARROW))
-			leftPaddle.y -= paddleSpeed;
+			leftPaddle.y -= 5;
 
 		//check for right arrow
 		else if (Key_Down(DIK_DOWNARROW))
-			leftPaddle.y += paddleSpeed;
+			leftPaddle.y += 5;
 
-		// For paddle2
+	/*	// For paddle2
+		if (Key_Down(DIK_W))
+			rightPaddle.y -= 5;
+
+		//check for right arrow
+		else if (Key_Down(DIK_S))
+			rightPaddle.y += 5;
+			*/
 
 		
-		if (mouseX < 0) { mouseX = 0;}
-		if (mouseY < 0) { mouseY = 0;}
-		if (mouseX > SCREEN_WIDTH) { mouseX = SCREEN_WIDTH; }
-		if (mouseY > SCREEN_HEIGHT) { mouseY = SCREEN_HEIGHT; }
-
-		//if (Key_Down(DIK_W))
-		//	rightPaddle.y -= paddleSpeed;
-
-		////check for right arrow
-		//else if (Key_Down(DIK_S))
-		//	rightPaddle.y += paddleSpeed;
-
 
 		//  constraint the paddle to the screen's edges
 		if (leftPaddle.y <= 0) {
@@ -243,14 +212,20 @@ void Game_Run(HWND hwnd)
 		if (rightPaddle.y + rightPaddle.height >= SCREEN_HEIGHT) {
 			rightPaddle.y = SCREEN_HEIGHT - rightPaddle.height;
 		}
-		
+		//see if ball hit the paddle
+		if ((CheckCollision(ball,leftPaddle) == 2) ||(CheckCollision(ball,rightPaddle) == 2))
+		{
+			ball.SetVelocity(ball.VelX()*(-1), ball.VelY());
+		}
+		else if ((CheckCollision(ball, leftPaddle) == 1) || (CheckCollision(ball, rightPaddle) == 1))
+		{
+			ball.SetVelocity(ball.VelX(), ball.VelY()*(-1));
+		}
 	}
-	rightPaddle.y += mouseY;
-	KeepTrack(mouseY, "Mouse Y");
+	rightPaddle.y += Mouse_Y();
 	//start rendering
 	if (d3ddev->BeginScene())
 	{
-		d3ddev->ShowCursor(TRUE);
 		//erase the entire background
 		d3ddev->StretchRect(back, NULL, backbuffer, NULL, D3DTEXF_NONE);
 
@@ -258,34 +233,13 @@ void Game_Run(HWND hwnd)
 		sprite_handler->Begin(D3DXSPRITE_ALPHABLEND);
 
 		//draw the ball
-		position.x = (float)ball.X();
-		position.y = (float)ball.Y();
-		sprite_handler->Draw(
-			ball.GetTexture(),
-			NULL,
-			NULL,
-			&position,
-			D3DCOLOR_XRGB(255, 255, 255));
+		ball.Draw(sprite_handler);
 
 		//draw the paddle
-		position.x = (float)leftPaddle.X();
-		position.y = (float)leftPaddle.Y();
-		sprite_handler->Draw(
-			leftPaddle.GetTexture(),
-			NULL,
-			NULL,
-			&position,
-			D3DCOLOR_XRGB(255, 255, 255));
+		leftPaddle.Draw(sprite_handler);
 
 		//draw the paddle2
-		position.x = (float)rightPaddle.X();
-		position.y = (float)rightPaddle.Y();
-		sprite_handler->Draw(
-			rightPaddle.GetTexture(),
-			NULL,
-			NULL,
-			&position,
-			D3DCOLOR_XRGB(255, 255, 255));
+		rightPaddle.Draw(sprite_handler);
 
 		UpdateLables();
 		// draw text:

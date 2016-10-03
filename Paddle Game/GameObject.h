@@ -2,6 +2,7 @@
 #include "d3d9.h"
 #include "d3dx9.h"
 #include "dxgraphics.h"
+#include "Constants.h"
 class GameObject
 {
 protected:
@@ -19,11 +20,12 @@ public:
 
 	LPDIRECT3DTEXTURE9 GameObjectTexture;
 	char *imageUrl;
-	bool isCollisonWith(GameObject);
 	void SetPosition(int, int);
 	void SetVelocity(int, int);
 	void SetSize(int, int);
 	int InitTexture(char*, D3DCOLOR);
+	
+	void Draw(LPD3DXSPRITE);
 
 	// getter - setter
 	LPDIRECT3DTEXTURE9 GetTexture();
@@ -35,5 +37,10 @@ public:
 	int Height();
 	GameObject();
 	~GameObject();
+
+	RECT GetRect();
+
+	friend int CheckCollision(GameObject,GameObject);
+//	friend DIRS Orientation(GameObject, GameObject);
 };
 
